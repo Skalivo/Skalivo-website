@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skalivo — AI Automation for Mortgage Brokers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #C8FF00;
+  --bg: #0D0D0D;
+  --bg2: #111111;
+  --bg3: #161616;
+  --white: #F4F4F0;
+  --muted: #999999;
+  --border: #1E1E1E;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: auto;
+}
+
+
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.nav-logo-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
+  background: #000;
+  border-radius: 6px;
+}
+.nav-logo-icon span {
+  display: block;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  transform-origin: left;
+}
+.nav-logo-icon span:nth-child(1) { width: 100%; opacity: 1; }
+.nav-logo-icon span:nth-child(2) { width: 75%; opacity: 0.7; }
+.nav-logo-icon span:nth-child(3) { width: 50%; opacity: 0.4; }
+.nav-wordmark {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--white);
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-cta {
+  font-size: 12px !important;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--accent) !important;
+  color: #000 !important;
+  padding: 10px 20px;
+  font-weight: 500 !important;
+  text-decoration: none;
+  transition: opacity 0.2s !important;
+}
+.nav-cta:hover { opacity: 0.85; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(200,255,0,0.06) 0%, transparent 70%);
+}
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(200,255,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,255,0,0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+}
+.hero-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards; opacity: 1;
+}
+.hero-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 11vw, 180px);
+  line-height: 0.92;
+  letter-spacing: -1px;
+  color: var(--white);
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.4s forwards; opacity: 1;
+}
+.hero-headline em {
+  font-style: normal;
+  color: var(--accent);
+  display: block;
+}
+.hero-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards; opacity: 1;
+}
+.hero-sub {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 400px;
+}
+.hero-sub strong { color: var(--white); font-weight: 400; }
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  padding: 16px 32px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-ghost {
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 16px 32px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-ghost:hover { border-color: var(--white); color: var(--white); }
+
+.hero-scroll {
+  position: absolute;
+  bottom: 40px;
+  right: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: fadeIn 1s 1.2s forwards; opacity: 1;
+}
+.hero-scroll span {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+/* MARQUEE */
+.marquee-wrap {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+  overflow: hidden;
+  background: var(--bg2);
+}
+.marquee-track {
+  display: flex;
+  gap: 0;
+  animation: marquee 20s linear infinite;
+  width: max-content;
+}
+.marquee-item {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 0 40px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.marquee-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* SECTIONS */
+section { padding: 120px 48px; }
+
+.section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 60px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  max-width: 80px;
+}
+
+/* PAIN SECTION */
+.pain {
+  background: var(--bg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.pain-left h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  line-height: 0.95;
+  color: var(--white);
+  margin-bottom: 32px;
+}
+.pain-left h2 em { font-style: normal; color: var(--accent); }
+.pain-left p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+.pain-stat {
+  display: flex;
+  gap: 40px;
+  margin-top: 48px;
+}
+.stat-item {}
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.pain-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 60px;
+}
+.pain-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  transition: border-color 0.3s, background 0.3s;
+  cursor: default;
+}
+.pain-row:hover { border-color: var(--accent); background: rgba(200,255,0,0.03); }
+.pain-row-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.pain-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.6;
+}
+.pain-title { font-size: 14px; color: var(--white); }
+.pain-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* SOLUTIONS */
+.solutions { background: var(--bg2); }
+.solutions h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  line-height: 0.95;
+  color: var(--white);
+  margin-bottom: 80px;
+}
+.solutions h2 em { font-style: normal; color: var(--accent); }
+.solutions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.sol-card {
+  background: var(--bg);
+  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.sol-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.sol-card:hover::before { transform: scaleX(1); }
+.sol-card:hover { background: var(--bg3); }
+.sol-number {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 80px;
+  color: var(--border);
+  line-height: 1;
+  margin-bottom: 24px;
+  transition: color 0.3s;
+}
+.sol-card:hover .sol-number { color: rgba(200,255,0,0.15); }
+.sol-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.sol-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.sol-save {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+/* HOW */
+.how { background: var(--bg); }
+.how-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.how h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  line-height: 0.95;
+  color: var(--white);
+  margin-bottom: 24px;
+}
+.how h2 em { font-style: normal; color: var(--accent); }
+.how p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+.how-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.how-step {
+  display: flex;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.how-step:last-child { border-bottom: none; }
+.step-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+.step-content {}
+.step-title { font-size: 15px; color: var(--white); margin-bottom: 6px; font-weight: 400; }
+.step-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.how-timeline {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 40px;
+  margin-top: 60px;
+}
+.timeline-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.timeline-row {
+  display: flex;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-row:last-child { border-bottom: none; }
+.t-day {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 48px;
+  padding-top: 2px;
+}
+.t-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.t-text strong { color: var(--white); font-weight: 400; }
+
+/* PRICING */
+.pricing { background: var(--bg2); }
+.pricing h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  line-height: 0.95;
+  color: var(--white);
+  margin-bottom: 80px;
+}
+.pricing h2 em { font-style: normal; color: var(--accent); }
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.price-card {
+  background: var(--bg);
+  padding: 48px 36px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.price-card.featured {
+  background: var(--bg3);
+  border: 1px solid var(--accent);
+}
+.price-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+}
+.featured-badge {
+  background: var(--accent);
+  color: #000;
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  text-transform: uppercase;
+}
+.price-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: var(--white);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.price-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.price-amount span { font-size: 28px; vertical-align: top; margin-top: 12px; display: inline-block; }
+.price-period { font-size: 12px; color: var(--muted); margin-bottom: 40px; }
+.price-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  margin-bottom: 40px;
+}
+.price-features li {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.price-features li::before {
+  content: '→';
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.price-cta {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.price-card:not(.featured) .price-cta {
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.price-card:not(.featured) .price-cta:hover { border-color: var(--white); color: var(--white); }
+.price-card.featured .price-cta {
+  background: var(--accent);
+  color: #000;
+}
+.price-card.featured .price-cta:hover { opacity: 0.85; }
+
+/* CTA BAND */
+.cta-band {
+  background: var(--accent);
+  padding: 100px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cta-band::before {
+  content: 'SKALIVO';
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 300px;
+  color: rgba(0,0,0,0.06);
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  letter-spacing: -5px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.cta-band h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  color: #000;
+  line-height: 0.95;
+}
+.cta-band p {
+  font-size: 16px;
+  color: rgba(0,0,0,0.6);
+  margin-top: 16px;
+  max-width: 360px;
+}
+.btn-dark {
+  background: #000;
+  color: var(--accent);
+  padding: 20px 40px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.btn-dark:hover { opacity: 0.85; }
+
+/* CONTACT */
+.contact {
+  background: var(--bg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.contact h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  line-height: 0.95;
+  color: var(--white);
+  margin-bottom: 32px;
+}
+.contact h2 em { font-style: normal; color: var(--accent); }
+.contact p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.contact-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.contact-val {
+  font-size: 15px;
+  color: var(--white);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.contact-val:hover { color: var(--accent); }
+.contact-right {
+  padding-top: 60px;
+}
+.contact-cta-block {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 48px;
+}
+.contact-cta-block h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+.contact-cta-block p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.contact-cta-block .btn-primary { width: 100%; text-align: center; }
+
+/* FOOTER */
+footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 40px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.footer-wordmark {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: var(--white);
+}
+.footer-abn {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+.footer-right {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* REVEAL ANIMATIONS */
+.reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+@keyframes fadeUp {
+  from { transform: translateY(20px); }
+  to { transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.1); }
+}
+
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  section { padding: 80px 24px; }
+  .hero { padding: 0 24px 60px; }
+  .hero-headline { font-size: 64px; }
+  .hero-bottom { flex-direction: column; align-items: flex-start; }
+  .pain, .how-inner, .contact { grid-template-columns: 1fr; gap: 48px; }
+  .solutions-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .cta-band { flex-direction: column; padding: 60px 24px; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+}
+
+/* FORM SECTION */
+.form-section {
+  background: var(--accent);
+  padding: 100px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.form-section::before {
+  content: 'AUDIT';
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 400px;
+  color: rgba(0,0,0,0.05);
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: -10px;
+}
+.form-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+  align-items: start;
+  max-width: 1200px;
+  position: relative;
+  z-index: 1;
+}
+.form-left h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 5vw, 72px);
+  line-height: 0.95;
+  color: #000;
+  margin-bottom: 20px;
+  margin-top: 16px;
+}
+.form-left h2 em { font-style: normal; color: var(--bg); }
+.form-left p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(0,0,0,0.6);
+  margin-bottom: 36px;
+}
+.form-promises { display: flex; flex-direction: column; gap: 12px; }
+.form-promise {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: rgba(0,0,0,0.7);
+  font-weight: 500;
+}
+.promise-dot {
+  width: 8px;
+  height: 8px;
+  background: #000;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.form-right {
+  background: var(--bg);
+  padding: 48px;
+}
+.audit-form { display: flex; flex-direction: column; gap: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.form-group input,
+.form-group select {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 14px 16px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  border-radius: 0;
+}
+.form-group input::placeholder { color: var(--muted); }
+.form-group input:focus,
+.form-group select:focus { border-color: var(--accent); }
+.form-group select option { background: var(--bg2); color: var(--white); }
+.form-submit {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 18px 32px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 8px;
+}
+.form-submit:hover { opacity: 0.85; }
+.form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.form-disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .form-inner { grid-template-columns: 1fr; gap: 40px; }
+  .form-section { padding: 60px 24px; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-right { padding: 32px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">
+      <span></span><span></span><span></span>
+    </div>
+    <span class="nav-wordmark">SKALIVO</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#pain">Problem</a></li>
+    <li><a href="#solutions">Solutions</a></li>
+    <li><a href="#how">Process</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="https://calendly.com/josh-skalivo" target="_blank" class="nav-cta">Book a call</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-tag">AI Automation &mdash; Australian Mortgage Brokers</div>
+  <h1 class="hero-headline">
+    Stop Doing<br>
+    <em>Work a</em><br>
+    Computer<br>
+    Can Do.
+  </h1>
+  <div class="hero-bottom">
+    <p class="hero-sub">
+      <strong>You are losing 10+ hours every week</strong> to lead follow-up, document chasing, and client status calls. Skalivo automates all of it — so you write more loans.
+    </p>
+    <div class="hero-actions">
+      <a href="https://calendly.com/josh-skalivo" target="_blank" class="btn-primary">Book a free call</a>
+      <a href="#solutions" class="btn-ghost">See what we build</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><div class="marquee-dot"></div>Lead Follow-Up<div class="marquee-dot"></div>Document Collection<div class="marquee-dot"></div>Client Status Updates<div class="marquee-dot"></div>Referral Partner Comms<div class="marquee-dot"></div>Post-Settlement Follow-Up<div class="marquee-dot"></div>7-Day Delivery<div class="marquee-dot"></div>2 Weeks Support Included</div>
+    <div class="marquee-item"><div class="marquee-dot"></div>Lead Follow-Up<div class="marquee-dot"></div>Document Collection<div class="marquee-dot"></div>Client Status Updates<div class="marquee-dot"></div>Referral Partner Comms<div class="marquee-dot"></div>Post-Settlement Follow-Up<div class="marquee-dot"></div>7-Day Delivery<div class="marquee-dot"></div>2 Weeks Support Included</div>
+  </div>
+</div>
+
+<!-- PAIN -->
+<section class="pain" id="pain">
+  <div class="pain-left">
+    <div class="section-label reveal">01 &mdash; The Problem</div>
+    <h2 class="reveal reveal-delay-1">Your Time Is Going<br>To The Wrong<br><em>Things.</em></h2>
+    <p class="reveal reveal-delay-2">Every hour you spend chasing documents, sending status updates, and following up on leads is an hour you are not writing loans. Multiply that across a month — and you are looking at thousands of dollars in lost productivity.</p>
+    <div class="pain-stat reveal reveal-delay-3">
+      <div class="stat-item">
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Hours lost per week</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">$3K</div>
+        <div class="stat-label">Monthly cost in time</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">17K</div>
+        <div class="stat-label">Brokers in Australia</div>
+      </div>
+    </div>
+  </div>
+  <div class="pain-right reveal">
+    <div class="pain-row">
+      <div class="pain-row-left"><span class="pain-num">01</span><span class="pain-title">Lead Follow-Up</span></div>
+      <span class="pain-time">30–60 min/day</span>
+    </div>
+    <div class="pain-row">
+      <div class="pain-row-left"><span class="pain-num">02</span><span class="pain-title">Document Collection</span></div>
+      <span class="pain-time">1–2 hrs/loan</span>
+    </div>
+    <div class="pain-row">
+      <div class="pain-row-left"><span class="pain-num">03</span><span class="pain-title">Client Status Updates</span></div>
+      <span class="pain-time">30–45 min/day</span>
+    </div>
+    <div class="pain-row">
+      <div class="pain-row-left"><span class="pain-num">04</span><span class="pain-title">Referral Partner Comms</span></div>
+      <span class="pain-time">2–3 hrs/week</span>
+    </div>
+    <div class="pain-row">
+      <div class="pain-row-left"><span class="pain-num">05</span><span class="pain-title">Post-Settlement Follow-Up</span></div>
+      <span class="pain-time">1–2 hrs/week</span>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTIONS -->
+<section class="solutions" id="solutions">
+  <div class="section-label reveal">02 &mdash; What We Build</div>
+  <h2 class="reveal reveal-delay-1">Five Automations.<br><em>All Your Time</em><br>Back.</h2>
+  <div class="solutions-grid">
+    <div class="sol-card reveal">
+      <div class="sol-number">01</div>
+      <div class="sol-title">Instant Lead Response</div>
+      <p class="sol-desc">Every new lead gets a personalised SMS within 60 seconds of submitting your form. Follow-up email at 24 hours if no reply. Fully automatic.</p>
+      <div class="sol-save">Saves 30–60 min/day</div>
+    </div>
+    <div class="sol-card reveal reveal-delay-1">
+      <div class="sol-number">02</div>
+      <div class="sol-title">Document Collection</div>
+      <p class="sol-desc">Automated document request sequence — email and SMS every 48 hours until received. Stops automatically when the client uploads. No manual chasing.</p>
+      <div class="sol-save">Saves 1–2 hrs/loan</div>
+    </div>
+    <div class="sol-card reveal reveal-delay-2">
+      <div class="sol-number">03</div>
+      <div class="sol-title">Client Status Updates</div>
+      <p class="sol-desc">Every time a loan moves stage in your CRM, a personalised update goes to the client automatically. Eliminates inbound "what's happening?" calls.</p>
+      <div class="sol-save">Saves 30–45 min/day</div>
+    </div>
+    <div class="sol-card reveal reveal-delay-1">
+      <div class="sol-number">04</div>
+      <div class="sol-title">Referral Partner Nurture</div>
+      <p class="sol-desc">Monthly check-in emails to every referral partner, sent automatically. Settlement notifications sent the moment their client's loan closes.</p>
+      <div class="sol-save">Saves 2–3 hrs/week</div>
+    </div>
+    <div class="sol-card reveal reveal-delay-2">
+      <div class="sol-number">05</div>
+      <div class="sol-title">Post-Settlement Follow-Up</div>
+      <p class="sol-desc">Day 7 review request. Day 90 check-in. Day 365 rate review reminder. Past clients stay warm and surface refinance opportunities automatically.</p>
+      <div class="sol-save">Saves 1–2 hrs/week + repeat revenue</div>
+    </div>
+    <div class="sol-card reveal reveal-delay-3" style="background: rgba(200,255,0,0.05); border: 1px solid rgba(200,255,0,0.2); display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px;">
+      <div>
+        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--accent); margin-bottom: 12px;">7 Days</div>
+        <div style="font-size: 13px; color: var(--muted); line-height: 1.6;">From sign-off to live automations running in your business</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how" id="how">
+  <div class="section-label reveal">03 &mdash; The Process</div>
+  <div class="how-inner">
+    <div>
+      <h2 class="reveal reveal-delay-1">Signed Today.<br><em>Running</em><br>In 7 Days.</h2>
+      <p class="reveal reveal-delay-2">Every build follows the same proven process. Fixed scope, fixed price, fixed timeline. No surprises, no scope creep, no ongoing dependency on us to run.</p>
+      <div class="how-steps reveal reveal-delay-3">
+        <div class="how-step">
+          <span class="step-num">01</span>
+          <div class="step-content">
+            <div class="step-title">Discovery Call — 60 Minutes</div>
+            <div class="step-desc">We audit your workflow across five areas, quantify the cost in time and dollars, and identify exactly what to automate first.</div>
+          </div>
+        </div>
+        <div class="how-step">
+          <span class="step-num">02</span>
+          <div class="step-content">
+            <div class="step-title">Proposal &amp; Sign-Off</div>
+            <div class="step-desc">Custom proposal sent within the hour. Sign and pay 50% deposit online. Work begins immediately.</div>
+          </div>
+        </div>
+        <div class="how-step">
+          <span class="step-num">03</span>
+          <div class="step-content">
+            <div class="step-title">Build &amp; Test</div>
+            <div class="step-desc">All automations built and sandbox-tested in days 3–6. Error handling built in. Loom walkthrough recorded.</div>
+          </div>
+        </div>
+        <div class="how-step">
+          <span class="step-num">04</span>
+          <div class="step-content">
+            <div class="step-title">Delivery &amp; Go Live</div>
+            <div class="step-desc">Day 7 delivery call. Walk through everything live. Automations switch from sandbox to live. 2 weeks support included.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="how-timeline reveal reveal-delay-2">
+        <div class="timeline-label">Build Timeline</div>
+        <div class="timeline-row">
+          <span class="t-day">Day 0</span>
+          <span class="t-text"><strong>Sign-off + deposit.</strong> Kick-off form sent within 2 hours.</span>
+        </div>
+        <div class="timeline-row">
+          <span class="t-day">1–2</span>
+          <span class="t-text"><strong>Kick-off call.</strong> Full workflow mapped, all access shared.</span>
+        </div>
+        <div class="timeline-row">
+          <span class="t-day">3–6</span>
+          <span class="t-text"><strong>Build phase.</strong> All automations built, tested, documented.</span>
+        </div>
+        <div class="timeline-row">
+          <span class="t-day">Day 7</span>
+          <span class="t-text"><strong>Delivery call.</strong> Live walkthrough. Everything goes live.</span>
+        </div>
+        <div class="timeline-row">
+          <span class="t-day">8–14</span>
+          <span class="t-text"><strong>Support period.</strong> Daily monitoring. Same-day fixes.</span>
+        </div>
+        <div class="timeline-row">
+          <span class="t-day">Day 14+</span>
+          <span class="t-text"><strong>Optional retainer</strong> begins — ongoing automation growth.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="section-label reveal">04 &mdash; Investment</div>
+  <h2 class="reveal reveal-delay-1">Transparent<br><em>Pricing.</em><br>Fixed Scope.</h2>
+  <div class="pricing-grid">
+    <div class="price-card reveal">
+      <div class="price-tag"><span>Starter</span></div>
+      <div class="price-name">Starter Build</div>
+      <div class="price-amount"><span>$</span>1,500</div>
+      <div class="price-period">ex GST &mdash; 1 automation</div>
+      <ul class="price-features">
+        <li>1 custom automation built and tested</li>
+        <li>Loom walkthrough included</li>
+        <li>Full documentation</li>
+        <li>2 weeks post-delivery support</li>
+        <li>50% deposit / 50% on delivery</li>
+      </ul>
+      <a href="https://calendly.com/josh-skalivo" target="_blank" class="price-cta">Book a call</a>
+    </div>
+    <div class="price-card featured reveal reveal-delay-1">
+      <div class="price-tag"><span>Most Popular</span><span class="featured-badge">Popular</span></div>
+      <div class="price-name">Standard Build</div>
+      <div class="price-amount"><span>$</span>2,500</div>
+      <div class="price-period">ex GST &mdash; 2–3 automations</div>
+      <ul class="price-features">
+        <li>2–3 custom automations built and tested</li>
+        <li>Loom walkthrough of everything</li>
+        <li>Full written documentation</li>
+        <li>2 weeks post-delivery support</li>
+        <li>50% deposit / 50% on delivery</li>
+      </ul>
+      <a href="https://calendly.com/josh-skalivo" target="_blank" class="price-cta">Book a call</a>
+    </div>
+    <div class="price-card reveal reveal-delay-2">
+      <div class="price-tag"><span>Premium</span></div>
+      <div class="price-name">Premium Build</div>
+      <div class="price-amount"><span>$</span>3,500</div>
+      <div class="price-period">ex GST &mdash; 4–5 automations</div>
+      <ul class="price-features">
+        <li>4–5 custom automations — full suite</li>
+        <li>Loom walkthrough of everything</li>
+        <li>Full written documentation</li>
+        <li>2 weeks post-delivery support</li>
+        <li>50% deposit / 50% on delivery</li>
+      </ul>
+      <a href="https://calendly.com/josh-skalivo" target="_blank" class="price-cta">Book a call</a>
+    </div>
+  </div>
+  <div style="margin-top: 2px; background: var(--bg); border: 1px solid var(--border); padding: 32px 36px; display: flex; align-items: center; justify-content: space-between; gap: 40px;" class="reveal">
+    <div>
+      <div style="font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px;">Optional Add-On</div>
+      <div style="font-size: 15px; color: var(--white);">Monthly Retainer — $500/mo</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">Monitoring, same-day fixes, 1 new automation/month, monthly check-in call</div>
+    </div>
+    <a href="https://calendly.com/josh-skalivo" target="_blank" class="btn-ghost" style="flex-shrink:0;">Ask about retainers</a>
+  </div>
+</section>
+
+<!-- FORM SECTION -->
+<section class="form-section" id="audit">
+  <div class="form-inner">
+    <div class="form-left">
+      <div class="section-label" style="color:#000; opacity:0.5;">Free Audit</div>
+      <h2>Get Your Free<br>Automation<br><em>Audit.</em></h2>
+      <p>Tell us about your business. We will analyse your workflow and show you exactly where you are losing time and money — at no cost and no obligation.</p>
+      <div class="form-promises">
+        <div class="form-promise"><span class="promise-dot"></span>We respond within 60 seconds</div>
+        <div class="form-promise"><span class="promise-dot"></span>Free 60-minute discovery call</div>
+        <div class="form-promise"><span class="promise-dot"></span>Custom proposal same day</div>
+      </div>
+    </div>
+    <div class="form-right">
+      <form id="auditForm" class="audit-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="firstName" placeholder="Josh" required>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lastName" placeholder="Smith" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Brokerage Name</label>
+          <input type="text" name="brokerage" placeholder="Smith Finance" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" name="phone" placeholder="0400 000 000" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="josh@brokerage.com.au" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Biggest time waster in your week?</label>
+          <select name="painPoint">
+            <option value="">Select one...</option>
+            <option value="Lead follow-up">Lead follow-up</option>
+            <option value="Document collection">Document collection</option>
+            <option value="Client status updates">Client status updates</option>
+            <option value="Referral partner comms">Referral partner comms</option>
+            <option value="Post-settlement follow-up">Post-settlement follow-up</option>
+            <option value="All of the above">All of the above</option>
+          </select>
+        </div>
+        <button type="submit" class="form-submit" id="formBtn">
+          <span id="btnText">Get My Free Audit &rarr;</span>
+          <span id="btnLoading" style="display:none;">Sending...</span>
+        </button>
+        <p class="form-disclaimer">No spam. No sales pitch without your permission. Just an honest audit of what we can automate.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div>
+    <div class="section-label reveal">05 &mdash; Contact</div>
+    <h2 class="reveal reveal-delay-1">Let's Talk<br><em>Automation.</em></h2>
+    <p class="reveal reveal-delay-2">Based in Adelaide, working with mortgage brokers across Australia. All discovery calls are free. All proposals are sent the same day.</p>
+    <div class="contact-details reveal reveal-delay-3">
+      <div class="contact-item">
+        <span class="contact-key">Email</span>
+        <a href="/cdn-cgi/l/email-protection#bbd1d4c8d3fbc8d0dad7d2cdd495d8d4d695dace" class="contact-val"><span class="__cf_email__" data-cfemail="cba1a4b8a38bb8a0aaa7a2bda4e5a8a4a6e5aabe">[email&#160;protected]</span></a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-key">Phone</span>
+        <a href="tel:0468904638" class="contact-val">0468 904 638</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-key">Website</span>
+        <a href="https://skalivo.com.au" class="contact-val">skalivo.com.au</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-key">ABN</span>
+        <span class="contact-val" style="cursor:default;">47 976 990 927</span>
+      </div>
+    </div>
+  </div>
+  <div class="contact-right">
+    <div class="contact-cta-block reveal reveal-delay-2">
+      <h3>Book a Discovery Call</h3>
+      <p>Free 60-minute call. We map your workflow, calculate the cost of manual tasks, and show you exactly what automation looks like in your business.</p>
+      <a href="https://calendly.com/josh-skalivo" target="_blank" class="btn-primary">Choose a time &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <div class="nav-logo-icon" style="width:24px;height:24px;padding:4px;">
+      <span></span><span></span><span></span>
+    </div>
+    <span class="footer-wordmark">SKALIVO</span>
+    <span class="footer-abn">ABN 47 976 990 927</span>
+  </div>
+  <div class="footer-right">
+    <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted);">AI Automation for Mortgage Brokers</div>
+    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">South Australia &mdash; Serving brokers nationally</div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+// Form submission
+document.getElementById('auditForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('formBtn');
+  const btnText = document.getElementById('btnText');
+  const btnLoading = document.getElementById('btnLoading');
+  btn.disabled = true;
+  btnText.style.display = 'none';
+  btnLoading.style.display = 'inline';
+
+  const data = {
+    firstName: this.firstName.value,
+    lastName: this.lastName.value,
+    brokerage: this.brokerage.value,
+    phone: this.phone.value,
+    email: this.email.value,
+    painPoint: this.painPoint.value,
+    submittedAt: new Date().toISOString()
+  };
+
+  // Send to Make.com webhook (replace WEBHOOK_URL with your actual URL)
+  const WEBHOOK_URL = 'REPLACE_WITH_MAKE_WEBHOOK_URL';
+  
+  try {
+    if (WEBHOOK_URL !== 'REPLACE_WITH_MAKE_WEBHOOK_URL') {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
+  } catch(err) {
+    console.log('Webhook error:', err);
+  }
+
+  // Always redirect to Calendly after 1 second
+  setTimeout(() => {
+    window.location.href = 'https://calendly.com/josh-skalivo';
+  }, 1000);
+});
+</script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+// Form submission
+document.getElementById('auditForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('formBtn');
+  const btnText = document.getElementById('btnText');
+  const btnLoading = document.getElementById('btnLoading');
+  btn.disabled = true;
+  btnText.style.display = 'none';
+  btnLoading.style.display = 'inline';
+
+  const data = {
+    firstName: this.firstName.value,
+    lastName: this.lastName.value,
+    brokerage: this.brokerage.value,
+    phone: this.phone.value,
+    email: this.email.value,
+    painPoint: this.painPoint.value,
+    submittedAt: new Date().toISOString()
+  };
+
+  // Send to Make.com webhook (replace WEBHOOK_URL with your actual URL)
+  const WEBHOOK_URL = 'REPLACE_WITH_MAKE_WEBHOOK_URL';
+  
+  try {
+    if (WEBHOOK_URL !== 'REPLACE_WITH_MAKE_WEBHOOK_URL') {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
+  } catch(err) {
+    console.log('Webhook error:', err);
+  }
+
+  // Always redirect to Calendly after 1 second
+  setTimeout(() => {
+    window.location.href = 'https://calendly.com/josh-skalivo';
+  }, 1000);
+});
+</script><script>
+
+document.querySelectorAll('a, button, .pain-row, .sol-card, .price-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); ring.classList.add('hover'); });
+  el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); ring.classList.remove('hover
