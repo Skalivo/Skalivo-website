@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skalivo — AI Automation for Mortgage Brokers</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #C8FF00;
+    --accent-dim: rgba(200,255,0,0.10);
+    --accent-glow: rgba(200,255,0,0.25);
+    --bg: #0A0A0A;
+    --bg2: #111111;
+    --bg3: #171717;
+    --white: #FFFFFF;
+    --paper: #F4F4F0;
+    --ink: #111111;
+    --muted: #444444;
+    --grey: #888888;
+    --border: #1E1E1E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 48px;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-logo span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--grey);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    background: var(--accent) !important;
+    color: var(--ink) !important;
+    padding: 10px 22px;
+    font-weight: 700 !important;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 140px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(200,255,0,0.04) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .hero-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-glow);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -3px;
+    max-width: 900px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+    text-shadow: 0 0 40px var(--accent-glow);
+  }
+
+  .hero p {
+    font-size: 17px;
+    color: var(--grey);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 44px;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    animation: fadeUp 0.5s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--ink);
+    padding: 15px 32px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.2s;
+    display: inline-block;
+    text-transform: uppercase;
+  }
+
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  .btn-ghost {
+    color: var(--grey);
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+
+  .btn-ghost:hover { color: var(--white); }
+
+  .hero-stats {
+    display: flex;
+    gap: 56px;
+    margin-top: 80px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.5s 0.4s ease both;
+  }
+
+  .stat-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -1px;
+  }
+
+  .stat-number span { color: var(--accent); }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--grey);
+    margin-top: 6px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section { padding: 100px 48px; }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    max-width: 700px;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 16px;
+    color: var(--grey);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 56px;
+  }
+
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .pain-item {
+    background: var(--bg);
+    padding: 36px 32px;
+    transition: background 0.2s;
+  }
+
+  .pain-item:hover { background: var(--bg3); }
+
+  .pain-item.highlight { background: var(--accent-dim); }
+
+  .pain-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .pain-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .pain-desc {
+    font-size: 13px;
+    color: var(--grey);
+    line-height: 1.6;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .steps { display: flex; flex-direction: column; }
+
+  .step {
+    display: flex;
+    gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    padding-top: 3px;
+    width: 32px;
+  }
+
+  .step h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+
+  .step p { font-size: 13px; color: var(--grey); line-height: 1.6; }
+
+  .flow-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 36px;
+    position: sticky;
+    top: 100px;
+  }
+
+  .flow-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .flow-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--grey);
+  }
+
+  .flow-item:last-child { border-bottom: none; color: var(--accent); }
+
+  .flow-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent-glow);
+    flex-shrink: 0;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    max-width: 900px;
+  }
+
+  .price-card {
+    background: var(--bg);
+    padding: 40px 36px;
+    transition: background 0.2s;
+  }
+
+  .price-card:hover { background: var(--bg3); }
+  .price-card.featured { background: var(--accent-dim); }
+
+  .featured-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .price-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .price-amount {
+    font-family: 'Space Mono', monospace;
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .price-desc {
+    font-size: 11px;
+    color: var(--grey);
+    margin-bottom: 28px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .price-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 32px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .price-features li {
+    font-size: 13px;
+    color: var(--grey);
+    display: flex;
+    gap: 10px;
+    line-height: 1.5;
+  }
+
+  .price-features li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .price-btn {
+    display: block;
+    text-align: center;
+    padding: 13px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    color: var(--white);
+    transition: all 0.2s;
+  }
+
+  .price-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .price-btn.filled {
+    background: var(--accent);
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+
+  .price-btn.filled:hover { opacity: 0.85; color: var(--ink); }
+
+  .included-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    margin-top: 48px;
+    max-width: 900px;
+  }
+
+  .included-item {
+    background: var(--bg);
+    padding: 28px 24px;
+  }
+
+  .included-icon { font-size: 20px; margin-bottom: 12px; }
+
+  .included-item h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .included-item p { font-size: 12px; color: var(--grey); line-height: 1.5; }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    max-width: 560px;
+    position: relative;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 32px;
+    padding: 0 0 40px 32px;
+    position: relative;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -3px; top: 6px;
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  .timeline-day {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    width: 28px;
+    padding-top: 2px;
+  }
+
+  .timeline-item h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .timeline-item p { font-size: 13px; color: var(--grey); line-height: 1.6; }
+
+  .cta-section {
+    padding: 100px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .cta-left { flex: 1; }
+
+  .cta-left h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .cta-left h2 em { font-style: normal; color: var(--accent); }
+
+  .cta-left p {
+    font-size: 15px;
+    color: var(--grey);
+    line-height: 1.7;
+    max-width: 420px;
+    margin-bottom: 36px;
+  }
+
+  .cta-details { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+
+  .cta-detail {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--grey);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cta-detail::before { content: '→'; color: var(--accent); }
+
+  .cta-right {
+    flex-shrink: 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 48px;
+    min-width: 300px;
+  }
+
+  .cta-contact-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--grey);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .contact-details { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+
+  .contact-detail {
+    font-size: 12px;
+    color: var(--grey);
+    display: flex;
+    gap: 12px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .contact-detail span { color: var(--white); }
+
+  footer {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .footer-logo span { color: var(--accent); }
+
+  .footer-links { display: flex; gap: 28px; list-style: none; }
+
+  .footer-links a {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--grey);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-copy {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">SKAL<span>IVO</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#timeline">Timeline</a></li>
+    <li><a href="#contact" class="nav-cta">Book a call</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-label">AI Automation · Mortgage Brokers · Australia</div>
+  <h1>Stop doing manually<br>what should run<br><em>automatically.</em></h1>
+  <p>Skalivo builds Make.com automations that handle your lead follow-up, document chasing, and client updates — so you can focus on writing loans.</p>
+  <div class="hero-actions">
+    <a href="#contact" class="btn-primary">Book a free discovery call</a>
+    <a href="#how" class="btn-ghost">See how it works →</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-number">8<span>–12</span></div>
+      <div class="stat-label">hours saved / week</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number"><span>7</span></div>
+      <div class="stat-label">days to delivery</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">60<span>s</span></div>
+      <div class="stat-label">lead response time</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">17<span>k+</span></div>
+      <div class="stat-label">brokers in Australia</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--bg2);">
+  <div class="section-label">01 &nbsp; The problem</div>
+  <h2 class="section-title">You're losing hours every week to tasks a computer should handle.</h2>
+  <p class="section-sub">Every broker we speak to has the same five problems. Here's what they're costing you.</p>
+  <div class="pain-grid">
+    <div class="pain-item">
+      <div class="pain-time">30–60 min/day</div>
+      <div class="pain-title">Lead Follow-Up</div>
+      <p class="pain-desc">Leads go cold because you followed up 4 hours later. A competitor followed up in 5 minutes.</p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-time">1–2 hrs/loan</div>
+      <div class="pain-title">Document Collection</div>
+      <p class="pain-desc">Manually chasing payslips and statements for every single loan. Over and over again.</p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-time">30–45 min/day</div>
+      <div class="pain-title">Client Status Updates</div>
+      <p class="pain-desc">5+ inbound calls a day from clients asking "what's happening with my loan?"</p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-time">2–3 hrs/week</div>
+      <div class="pain-title">Referral Partner Comms</div>
+      <p class="pain-desc">Referral relationships going cold because you forgot to follow up last month.</p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-time">1–2 hrs/week</div>
+      <div class="pain-title">Post-Settlement</div>
+      <p class="pain-desc">No system for reviews, rate reminders, or repeat business. Revenue left on the table.</p>
+    </div>
+    <div class="pain-item highlight">
+      <div class="pain-time">The fix</div>
+      <div class="pain-title">Skalivo automates all five.</div>
+      <p class="pain-desc">One build. Seven business days. Everything running automatically while you sleep.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="section-label">02 &nbsp; How it works</div>
+  <h2 class="section-title">Built for your workflow. Live in 7 days.</h2>
+  <p class="section-sub">Every automation is purpose-built for your CRM, your email platform, and your exact process.</p>
+  <div class="how-grid">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <h4>Discovery call</h4>
+          <p>We map your workflow across five areas and identify exactly where automation will have the biggest impact.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <h4>Custom build</h4>
+          <p>We build your automations in Make.com, connecting your CRM, email platform, and any tools you already use.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <h4>Test and deliver</h4>
+          <p>Everything is tested with dummy data before going live. You get a Loom walkthrough of every automation.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div>
+          <h4>2 weeks support</h4>
+          <p>We monitor everything post-delivery and fix any issues at no extra charge. Then it runs itself.</p>
+        </div>
+      </div>
+    </div>
+    <div class="flow-box">
+      <div class="flow-title">Live example — Lead Follow-Up automation</div>
+      <div>
+        <div class="flow-item"><div class="flow-dot"></div>New lead submits your contact form</div>
+        <div class="flow-item"><div class="flow-dot"></div>Personalised SMS sent within 60 seconds</div>
+        <div class="flow-item"><div class="flow-dot"></div>Follow-up email at 24hrs if no reply</div>
+        <div class="flow-item"><div class="flow-dot"></div>Lead added to your CRM automatically</div>
+        <div class="flow-item"><div class="flow-dot"></div>Sequence stops when they respond</div>
+        <div class="flow-item"><div class="flow-dot"></div>You never lifted a finger.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing" style="background:var(--bg2);">
+  <div class="section-label">03 &nbsp; Pricing</div>
+  <h2 class="section-title">Fixed price. Fixed scope. No surprises.</h2>
+  <p class="section-sub">Every build includes a Loom walkthrough, full documentation, and 2 weeks post-delivery support.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">Starter</div>
+      <div class="price-amount">$1,500</div>
+      <div class="price-desc">ex GST · 1 automation</div>
+      <ul class="price-features">
+        <li>1 automation built and tested</li>
+        <li>Loom video walkthrough</li>
+        <li>Full documentation</li>
+        <li>2 weeks post-delivery support</li>
+      </ul>
+      <a href="#contact" class="price-btn">Get started</a>
+    </div>
+    <div class="price-card featured">
+      <div class="featured-badge">★ Most popular</div>
+      <div class="price-name">Standard</div>
+      <div class="price-amount">$2,500</div>
+      <div class="price-desc">ex GST · 2–3 automations</div>
+      <ul class="price-features">
+        <li>2–3 automations built and tested</li>
+        <li>Loom video walkthrough</li>
+        <li>Full documentation</li>
+        <li>2 weeks post-delivery support</li>
+      </ul>
+      <a href="#contact" class="price-btn filled">Book a call</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Premium</div>
+      <div class="price-amount">$3,500+</div>
+      <div class="price-desc">ex GST · 4–5 automations</div>
+      <ul class="price-features">
+        <li>4–5 automations built and tested</li>
+        <li>Loom video walkthrough</li>
+        <li>Full documentation</li>
+        <li>2 weeks post-delivery support</li>
+      </ul>
+      <a href="#contact" class="price-btn">Get started</a>
+    </div>
+  </div>
+  <div class="included-grid">
+    <div class="included-item">
+      <div class="included-icon">🎥</div>
+      <h4>Loom walkthrough</h4>
+      <p>Every automation explained on video so you always know how it works.</p>
+    </div>
+    <div class="included-item">
+      <div class="included-icon">📋</div>
+      <h4>Documentation</h4>
+      <p>One page per automation. Trigger, action, outcome, tools used.</p>
+    </div>
+    <div class="included-item">
+      <div class="included-icon">🛠</div>
+      <h4>2 weeks support</h4>
+      <p>Bug fixes and adjustments at no extra charge post-delivery.</p>
+    </div>
+    <div class="included-item">
+      <div class="included-icon">💳</div>
+      <h4>Flexible payment</h4>
+      <p>50% deposit upfront, 50% on delivery via bank transfer or Stripe.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="timeline">
+  <div class="section-label">04 &nbsp; Timeline</div>
+  <h2 class="section-title">From sign-off to live in 7 business days.</h2>
+  <p class="section-sub">A clear process from day one so you always know what's happening and when.</p>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-day">D0</div>
+      <div><h4>Sign-off & deposit</h4><p>Contract signed, 50% deposit paid. Kick-off form sent within 2 hours.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-day">D1</div>
+      <div><h4>Kick-off call</h4><p>30 minute call. We get access to your tools and map your exact workflow.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-day">D3</div>
+      <div><h4>Build phase</h4><p>All automations built and sandbox-tested. Error handling built in from the start.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-day">D7</div>
+      <div><h4>Delivery</h4><p>Live walkthrough call. Automations go live after you confirm you're happy.</p></div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-day">D14</div>
+      <div><h4>Support ends</h4><p>2 weeks of included bug fixes complete. Optional monthly retainer available.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="cta-left">
+    <div class="section-label">05 &nbsp; Get started</div>
+    <h2>Ready to get<br>your time <em>back?</em></h2>
+    <p>Book a free 20-minute discovery call. We'll identify where automation will have the biggest impact on your business — no pitch, no pressure.</p>
+    <a href="https://calendly.com" class="btn-primary">Book a free discovery call</a>
+    <div class="cta-details">
+      <div class="cta-detail">20 minutes · no obligation</div>
+      <div class="cta-detail">Proposal sent within the hour</div>
+      <div class="cta-detail">Live in 7 business days</div>
+      <div class="cta-detail">50% deposit · 50% on delivery</div>
+    </div>
+  </div>
+  <div class="cta-right">
+    <div class="cta-contact-label">Direct contact</div>
+    <div class="contact-details">
+      <div class="contact-detail">📞 <span>0468 904 638</span></div>
+      <div class="contact-detail">✉ <span>josh@skalivo.com.au</span></div>
+      <div class="contact-detail">🌐 <span>skalivo.io</span></div>
+    </div>
+    <a href="https://calendly.com" class="btn-primary" style="width:100%;text-align:center;display:block;">Book a call →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">SKAL<span>IVO</span></div>
+  <ul class="footer-links">
+    <li><a href="mailto:josh@skalivo.com.au">josh@skalivo.com.au</a></li>
+    <li><a href="tel:0468904638">0468 904 638</a></li>
+    <li><a href="#">skalivo.io</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 Skalivo Pty Ltd · ABN 47 976 990 927</div>
+</footer>
+
+</body>
+</html>
